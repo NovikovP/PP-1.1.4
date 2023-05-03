@@ -25,7 +25,7 @@ public class Main {
 
         us.getAllUsers().forEach(System.out::println);
 
-        //us.cleanUsersTable();
-        //us.dropUsersTable();
+        us.cleanUsersTable();
+        us.dropUsersTable();
     }
 }
