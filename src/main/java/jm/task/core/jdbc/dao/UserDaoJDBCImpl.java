@@ -19,19 +19,13 @@ public class UserDaoJDBCImpl implements UserDao {
     public void createUsersTable() {
         try {
             Statement stmt = conn.createStatement();
-//            stmt.execute("CREATE TABLE dbITM.users (\n" +
-//                    "       id bigint NOT NULL ,\n" +
-//                    "       name character varying NOT NULL,\n" +
-//                    "       lastName character varying NOT NULL,\n" +
-//                    "       age bytea NOT NULL,\n" +
-//                    "       PRIMARY KEY  (id)");
 
             stmt.execute("""
-                create table if not exists "users"(
-                id        serial,
-                name      varchar(100) not null,
-                lastName  varchar(100) not null,
-                age smallint
+                CREATE TABLE IF NOT EXISTS "users"(
+                id        SERIAL,
+                name      VARCHAR(100) NOT NULL,
+                lastName  VARCHAR(100) NOT NULL,
+                age SMALLINT
                 ); """);
 
             LOGGER.info("Создана база данных dbITM с таблицей users");
@@ -49,7 +43,6 @@ public class UserDaoJDBCImpl implements UserDao {
         } catch (SQLException sqlException) {
             LOGGER.warning("Сбой при удалении таблицы users в БД dbITM");
             LOGGER.warning(sqlException.getMessage());
-            // возможно тут неуместен rollback
             try {
                 conn.rollback();
             } catch (SQLException ex) {
@@ -62,7 +55,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public void saveUser(String name, String lastName, byte age) {
         try {
             PreparedStatement stmt = conn.prepareStatement(
-                    "insert into users (name, lastname, age) " + "Values (?, ?, ?)");
+                    "INSERT INTO users (name, lastname, age) " + "VALUES (?, ?, ?)");
             conn.setAutoCommit(false);
             stmt.setString(1, name);
             stmt.setString(2, lastName);
@@ -89,7 +82,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public void removeUserById(long id) {
         try {
             PreparedStatement stmt = conn.prepareStatement(
-                    "DELETE FROM users where id = ?");
+                    "DELETE FROM users WHERE id = ?");
             conn.setAutoCommit(false);
             stmt.setLong(1, id);
             stmt.executeUpdate();
@@ -136,7 +129,7 @@ public class UserDaoJDBCImpl implements UserDao {
     public void cleanUsersTable() {
         try {
             Statement stmt = conn.createStatement();
-            stmt.executeUpdate("TRUNCATE table users");
+            stmt.executeUpdate("TRUNCATE TABLE users");
             LOGGER.info("Все пользователи удалены");
         } catch (SQLException sqlException) {
             LOGGER.warning("Ошибка при удалении всех пользователей из БД");

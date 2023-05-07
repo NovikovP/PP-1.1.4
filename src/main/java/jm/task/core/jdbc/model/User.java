@@ -1,16 +1,25 @@
 package jm.task.core.jdbc.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.*;
 
-@SuppressWarnings({"SpellCheckingInspection", "JpaDataSourceORMInspection"})
-@Entity
-@Table(name = "usersHiber", schema = "dbITM")
+
+//@SuppressWarnings({"SpellCheckingInspection", "JpaDataSourceORMInspection"})
+//@Table(name = "usersHiber", schema = "dbITM")
+//@Table(name = "usersHiber")
+//@Table()
+
 @Data
+@Builder
+@Entity
+@Table(name = "users_hiber")
 public class User {
+    //@GeneratedValue(generator = "increment")
+    //@GeneratedValue(strategy = GenerationType.AUTO)
     @Id
-    @GeneratedValue(generator = "increment")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false)
     private Long id;
 
@@ -69,4 +78,5 @@ public class User {
         this(name, lastName, age);
         this.id = id;
     }
+
 }

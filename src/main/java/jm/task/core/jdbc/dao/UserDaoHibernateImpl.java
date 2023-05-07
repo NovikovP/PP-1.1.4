@@ -1,6 +1,7 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
+import jm.task.core.jdbc.util.Util;
 import org.hibernate.Session;
 
 import javax.persistence.Query;
@@ -13,6 +14,10 @@ import static jm.task.core.jdbc.util.Util.getHibernateConnection;
 @SuppressWarnings("SqlResolve")
 public class UserDaoHibernateImpl implements UserDao {
     private static final Logger LOGGER = Logger.getLogger(UserDaoHibernateImpl.class.getName());
+    private Session session = Util.getSession();
+    //private final Session session = Util.getSession();
+    //private final Session session = Util.getHibernateConnection();
+
 
     public UserDaoHibernateImpl() {
 
@@ -22,22 +27,21 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void createUsersTable() {
         try {
-            Session session = getHibernateConnection();
-            session.getTransaction().begin();
+            session.beginTransaction();//проверит, есть ли уже существующая транзакция, если да, то не создаст новую транзакцию
+            session.createSQLQuery("""
+                CREATE TABLE IF NOT EXISTS "users_hiber"(
+                id        SERIAL,
+                name      VARCHAR(100) NOT NULL,
+                lastName  VARCHAR(100) NOT NULL,
+                age SMALLINT
+                ); """).executeUpdate();//транзакция.фиксация();
+            session.getTransaction().commit();//возвращаемый результат;
+            //session.close();
 
-            session.createSQLQuery(""" 
-                    create table if not exists usersHiber(
-                    id        serial,
-                    name      varchar(100) not null,
-                    lastName  varchar(100) not null,
-                    age smallint
-                    );
-                    """).executeUpdate();
+            LOGGER.info("Создана база данных dbITM с таблицей users_hiber");
 
-            LOGGER.info("Создана база данных dbITM с таблицей usersHiber");
-            session.close();
         } catch (Exception e) {
-            LOGGER.warning("Сбой при создании базы данных dbITM с таблицей usersHiber");
+            LOGGER.warning("Сбой при создании базы данных dbITM с таблицей users_hiber");
             LOGGER.warning(e.getMessage());
         }
     }
@@ -45,14 +49,19 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void dropUsersTable() {
         try {
-            Session session = getHibernateConnection();
-            session.getTransaction().begin();
-            session.createSQLQuery(
-                    "DROP TABLE usersHiber").executeUpdate();
-            LOGGER.info("Удалена таблица usersHiber в базе данных dbITM ");
+//            session.getTransaction().begin();
+//            session.beginTransaction();
+            session.getTransaction();
+
+            session.createSQLQuery("""
+                            DROP TABLE IF EXISTS "users_hiber" ;
+                            """).executeUpdate();
+            session.getTransaction().commit();
+
+            LOGGER.info("Удалена таблица users_hiber в базе данных dbITM ");
             session.close();
         } catch (Exception e) {
-            LOGGER.warning("Сбой при удалении таблицы usersHiber в базе данных dbITM");
+            LOGGER.warning("Сбой при удалении таблицы users_hiber в базе данных dbITM");
             LOGGER.warning(e.getMessage());
         }
     }
@@ -61,12 +70,12 @@ public class UserDaoHibernateImpl implements UserDao {
     public void saveUser(String name, String lastName, byte age) {
         try {
             User user = new User(name, lastName, age);
-            Session session = getHibernateConnection();
-            session.getTransaction().begin();
-            session.persist(user);
+            session.beginTransaction();
+            //session.getTransaction().begin();
+
+            session.save(user);
             session.getTransaction().commit();
-            session.close();
-            System.out.printf("User с именем – %s добавлен в базу данных \n", name);
+            //session.close();
             LOGGER.info("Пользователь " + name + ": cоздан и добавлен в базу данных");
         } catch (Exception e) {
             LOGGER.warning("Ошибка при добавлении записи в базу данных");
@@ -77,14 +86,15 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void removeUserById(long id) {
         try {
-            Session session = getHibernateConnection();
+//            Session session = getHibernateConnection();
+            session.getTransaction();
             session.getTransaction().begin();
-            Query query = session.createQuery("delete from User u where u.id = :userId");
+            Query query = session.createQuery("DELETE FROM User u WHERE u.id = :userId");
             query.setParameter("userId", id);
             query.executeUpdate();
             LOGGER.info("Пользователь удален из базы данных");
             session.getTransaction().commit();
-            session.close();
+            //session.close();
         } catch (Exception e) {
             LOGGER.warning("Ошибка при удалении пользователя по Id");
             LOGGER.warning(e.getMessage());
@@ -95,12 +105,13 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public List<User> getAllUsers() {
         try {
-            Session session = getHibernateConnection();
+//            Session session = getHibernateConnection();
+//            session.getTransaction();
             session.getTransaction().begin();
-            Query query = session.createQuery("select u from User u");
+            Query query = session.createQuery("SELECT u FROM User u");
             List<User> users = query.getResultList();
             LOGGER.info("Прочитан список пользователей из БД");
-            session.close();
+            //session.close();
             return users;
         } catch (Exception e) {
             LOGGER.warning("Ошибка при считывании всех пользователей из БД");
@@ -112,12 +123,12 @@ public class UserDaoHibernateImpl implements UserDao {
     @Override
     public void cleanUsersTable() {
         try {
-            Session session = getHibernateConnection();
-            session.getTransaction().begin();
-            Query query = session.createQuery("delete from User u");
+//            Session session = getHibernateConnection();
+            session.getTransaction();
+            Query query = session.createQuery("DELETE FROM User u");
             query.executeUpdate();
             LOGGER.info("Все пользователи удалены");
-            session.close();
+            //session.close();
         } catch (Exception e) {
             LOGGER.warning("Ошибка при удалении всех пользователей из БД");
             LOGGER.warning(e.getMessage());
