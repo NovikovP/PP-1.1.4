@@ -9,7 +9,7 @@ public class Main {
     // Переключение режимов JDBC vs Hibernate
     // false -use UserDaoHibernateImpl
     // true  -use UserDaoJDBCImpl
-    public static final boolean IS_JDBC = false;
+    public static final boolean IS_JDBC = true;
 
     public static void main(String[] args) {
         // реализуйте алгоритм здесь
